@@ -7,6 +7,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Typeface;
+
 import android.graphics.pdf.PdfDocument;
 import android.net.Uri;
 import android.os.Bundle;
@@ -49,8 +50,6 @@ public class HomeFragment extends Fragment {
     int pageHeight = 3508;
     int pageWidth = 2480;
 
-    // creating a bitmap variable
-    // for storing our images
     Bitmap bmp, scaledbmp;
 
     public static final int REQUEST_ID_MULTIPLE_PERMISSIONS = 1;
@@ -90,7 +89,7 @@ public class HomeFragment extends Fragment {
                     etText.startAnimation(shakeError());
                 }else {
 
-                    create_pdf();
+                    createPdf();
                 }
 
 
@@ -102,7 +101,7 @@ public class HomeFragment extends Fragment {
         return parentView;
     }
 
-    private void create_pdf() {
+    private void createPdf() {
 
         //                 This needs to resemble an A4 piece of paper
         //          <--------              W 2480                -------->
@@ -134,86 +133,62 @@ public class HomeFragment extends Fragment {
 
 
         getpath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString();
-        File file = new File(getpath, etText.getText().toString() + "Test.pdf");
+
+        File file = new File(getpath,  "Test.pdf");
 
 
         try {
 
 
-
-            // creating an object variable
-            // for our PDF document.
-            PdfDocument mPdfDocument = new PdfDocument();
+            PdfDocument myPdfDocument = new PdfDocument();
 
             // two variables for paint "paint" is used
             // for drawing shapes and we will use "title"
             // for adding text in our PDF file.
-            Paint paint = new Paint();
-            Paint title = new Paint();
+            Paint myPaint = new Paint();
+
 
             // we are adding page info to our PDF file
             // in which we will be passing our pageWidth,
             // pageHeight and number of pages and after that
             // we are calling it to create our PDF.
-            PdfDocument.PageInfo mypageInfo = new PdfDocument.PageInfo.Builder(pageWidth, pageHeight, 1).create();
+            PdfDocument.PageInfo myPageInfo = new PdfDocument.PageInfo.Builder(pageWidth, pageHeight, 1).create();
 
             // below line is used for setting
             // start page for our PDF file.
-            PdfDocument.Page myPage = mPdfDocument.startPage(mypageInfo);
+            PdfDocument.Page myPage = myPdfDocument.startPage(myPageInfo);
 
             // creating a variable for canvas
             // from our page of PDF.
             Canvas canvas = myPage.getCanvas();
 
-            // below line is used to draw our image on our PDF file.
-            // the first parameter of our drawbitmap method is
-            // our bitmap
-            // second parameter is position from left
-            // third parameter is position from top and last
-            // one is our variable for paint.
-            canvas.drawBitmap(scaledbmp, 56, 40, paint);
-
-            // below line is used for adding typeface for
-            // our text which we will be adding in our PDF file.
-            title.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.NORMAL));
-
-            // below line is used for setting text size
-            // which we will be displaying in our PDF file.
-            title.setTextSize(15);
-
-            // below line is sued for setting color
-            // of our text inside our PDF file.
-            title.setColor(ContextCompat.getColor(getContext(), R.color.purple_200));
-
-            // below line is used to draw text in our PDF file.
-            // the first parameter is our text, second parameter
-            // is position from start, third parameter is position from top
-            // and then we are passing our variable of paint which is title.
-            canvas.drawText("A portal for IT professionals.", 209, 100, title);
-            canvas.drawText("Geeks for Geeks", 209, 80, title);
 
             // similarly we are creating another text and in this
             // we are aligning this text to center of our PDF file.
-            title.setTypeface(Typeface.defaultFromStyle(Typeface.NORMAL));
-            title.setColor(ContextCompat.getColor(getContext(), R.color.purple_200));
-            title.setTextSize(15);
+            myPaint.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+            myPaint.setColor(ContextCompat.getColor(getContext(), R.color.purple_200));
+            myPaint.setTextSize(30);
 
             // below line is used for setting
             // our text to center of PDF.
-            title.setTextAlign(Paint.Align.CENTER);
-            canvas.drawText("This is sample document which we have created.", 396, 560, title);
+            myPaint.setTextAlign(Paint.Align.CENTER);
+
+
+
+            canvas.drawText(etText.getText().toString(), 396, 560, myPaint);
 
             // after adding all attributes to our
             // PDF file we will be finishing our page.
-            mPdfDocument.finishPage(myPage);
+            myPdfDocument.finishPage(myPage);
 
             // below line is used to set the name of
             // our PDF file and its path.
-            // after creating a file name we will
-            // write our PDF file to that location.
-            mPdfDocument.writeTo(new FileOutputStream(file));
+
+            myPdfDocument.writeTo(new FileOutputStream(file));
+
 
             try {
+
                 Toast.makeText(getContext(), "PDF file generated successfully.", Toast.LENGTH_SHORT).show();
                 open_pdf();
 
@@ -231,8 +206,8 @@ public class HomeFragment extends Fragment {
 
     public void open_pdf() {
 
-        File file = new File(getpath, etText.getText().toString() + "Test.pdf");
-        Uri pdfURI = FileProvider.getUriForFile(getContext(), "com.ak.my_pdf" + ".provider", file);
+        File file = new File(getpath, "Test.pdf");
+        Uri pdfURI = FileProvider.getUriForFile(getContext(), getActivity().getPackageName()+ ".provider", file);
         Intent target = new Intent(Intent.ACTION_VIEW);
         target.setDataAndType(pdfURI, "application/pdf");
         target.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
