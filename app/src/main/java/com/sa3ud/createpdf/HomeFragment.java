@@ -31,8 +31,11 @@ import android.widget.Toast;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 
 public class HomeFragment extends Fragment {
@@ -43,12 +46,12 @@ public class HomeFragment extends Fragment {
 
     String getpath;
 
-
+    File file;
 
     // declaring width and height
     // for our PDF file.
-    int pageHeight = 3508;
-    int pageWidth = 2480;
+    int pageHeight = 600;
+    int pageWidth = 500;
 
     Bitmap bmp, scaledbmp;
 
@@ -73,9 +76,9 @@ public class HomeFragment extends Fragment {
         etText = parentView.findViewById(R.id.et_text);
         btnCreate = parentView.findViewById(R.id.btn_create);
 
-        // initializing our variables.
-      //  bmp = BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher_background);
-       // scaledbmp = Bitmap.createScaledBitmap(bmp, 140, 140, false);
+   //      initializing our variables.
+        bmp = BitmapFactory.decodeResource(getResources(), R.drawable.img_random);
+        scaledbmp = Bitmap.createScaledBitmap(bmp, 400, 300, false);
 
 
 
@@ -132,10 +135,9 @@ public class HomeFragment extends Fragment {
         //       v  |__________________Bottom of page____________________|  _|
 
 
-        getpath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString();
 
-        File file = new File(getpath,  "Test.pdf");
 
+        file = getOutputFile(etText.getText().toString());
 
         try {
 
@@ -163,6 +165,9 @@ public class HomeFragment extends Fragment {
             Canvas canvas = myPage.getCanvas();
 
 
+            canvas.drawBitmap(scaledbmp,50,50,myPaint);
+
+
             // similarly we are creating another text and in this
             // we are aligning this text to center of our PDF file.
             myPaint.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
@@ -175,15 +180,16 @@ public class HomeFragment extends Fragment {
 
 
 
-            canvas.drawText(etText.getText().toString(), 396, 560, myPaint);
+            canvas.drawText(etText.getText().toString(), 100, 400, myPaint);
 
             // after adding all attributes to our
             // PDF file we will be finishing our page.
             myPdfDocument.finishPage(myPage);
 
+
+
             // below line is used to set the name of
             // our PDF file and its path.
-
             myPdfDocument.writeTo(new FileOutputStream(file));
 
 
@@ -206,12 +212,15 @@ public class HomeFragment extends Fragment {
 
     public void open_pdf() {
 
-        File file = new File(getpath, "Test.pdf");
+     //   File file = new File(getpath, "Test.pdf");
+
         Uri pdfURI = FileProvider.getUriForFile(getContext(), getActivity().getPackageName()+ ".provider", file);
         Intent target = new Intent(Intent.ACTION_VIEW);
+
         target.setDataAndType(pdfURI, "application/pdf");
         target.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
         target.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
 
         Intent intent = Intent.createChooser(target, "Open File");
         try {
@@ -236,18 +245,51 @@ public class HomeFragment extends Fragment {
         int storage2 = ContextCompat.checkSelfPermission(getContext(), android.Manifest.permission.READ_EXTERNAL_STORAGE);
         List<String> listPermissionsNeeded = new ArrayList<>();
         if (storage != PackageManager.PERMISSION_GRANTED) {
+
             listPermissionsNeeded.add(android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
+
         }
         if (storage2 != PackageManager.PERMISSION_GRANTED) {
+
             listPermissionsNeeded.add(android.Manifest.permission.READ_EXTERNAL_STORAGE);
+
         }
         if (!listPermissionsNeeded.isEmpty()) {
+
             ActivityCompat.requestPermissions(getActivity(), listPermissionsNeeded.toArray
                     (new String[listPermissionsNeeded.size()]), REQUEST_ID_MULTIPLE_PERMISSIONS);
             return false;
+
         }
         return true;
 
+    }
+
+    private File getOutputFile(String filename) {
+
+        getpath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).toString();
+      //  File file = new File(getpath,  "Test.pdf");
+
+        File root = new File(getpath, "Create PDF");
+        boolean isFolderCreated = true;
+
+        if (!root.exists()) {
+
+            isFolderCreated = root.mkdir();
+        } else {
+
+        }
+
+        if (isFolderCreated) {
+
+            String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
+            String imageFileName = filename + "_" + timeStamp;
+
+            return new File(root, imageFileName + ".pdf");
+        } else {
+            Toast.makeText(getContext(), "Folder is not created", Toast.LENGTH_SHORT).show();
+            return null;
+        }
     }
 
 
