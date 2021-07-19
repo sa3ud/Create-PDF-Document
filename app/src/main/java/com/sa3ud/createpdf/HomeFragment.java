@@ -1,5 +1,7 @@
 package com.sa3ud.createpdf;
 
+import android.content.ClipData;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -12,12 +14,14 @@ import android.graphics.pdf.PdfDocument;
 import android.net.Uri;
 import android.os.Bundle;
 
+import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 
 import android.os.Environment;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -28,6 +32,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -47,6 +52,12 @@ public class HomeFragment extends Fragment {
     String getpath;
 
     File file;
+Uri mArrayUri;
+
+
+    private int image_rec_code = 1;
+    static final int REQUEST_IMAGE_CAPTURE = 0;
+
 
     // declaring width and height
     // for our PDF file.
@@ -140,26 +151,19 @@ public class HomeFragment extends Fragment {
         file = getOutputFile(etText.getText().toString());
 
         try {
-
-
             PdfDocument myPdfDocument = new PdfDocument();
-
             // two variables for paint "paint" is used
             // for drawing shapes and we will use "title"
             // for adding text in our PDF file.
             Paint myPaint = new Paint();
-
-
             // we are adding page info to our PDF file
             // in which we will be passing our pageWidth,
             // pageHeight and number of pages and after that
             // we are calling it to create our PDF.
             PdfDocument.PageInfo myPageInfo = new PdfDocument.PageInfo.Builder(pageWidth, pageHeight, 1).create();
-
             // below line is used for setting
             // start page for our PDF file.
             PdfDocument.Page myPage = myPdfDocument.startPage(myPageInfo);
-
             // creating a variable for canvas
             // from our page of PDF.
             Canvas canvas = myPage.getCanvas();
@@ -198,6 +202,7 @@ public class HomeFragment extends Fragment {
                 Toast.makeText(getContext(), "PDF file generated successfully.", Toast.LENGTH_SHORT).show();
                 open_pdf();
 
+
             } catch (Exception e) {
                 Toast.makeText(getContext(), "File Not Found", Toast.LENGTH_SHORT).show();
             }
@@ -208,6 +213,9 @@ public class HomeFragment extends Fragment {
 
 
     }
+
+
+
 
 
     public void open_pdf() {
@@ -264,6 +272,23 @@ public class HomeFragment extends Fragment {
         return true;
 
     }
+
+
+
+    public void share(File file) {
+
+
+        Uri sharingUri = Uri.parse(file.getPath());
+
+        Intent share = new Intent();
+        share.setAction(Intent.ACTION_SEND);
+        share.setType("application/pdf");
+        share.putExtra(Intent.EXTRA_STREAM, sharingUri);
+        startActivity(share);
+    }
+
+
+
 
     private File getOutputFile(String filename) {
 
